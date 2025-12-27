@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墙绘报价工具 - 内部参考版</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+
+<body>
+    <div class="app-background"></div>
+
+
+    <main class="container">
+        <div class="calculator-card">
+            <div class="calculator-inputs">
+                <!-- Section: Customer Name -->
+                <section class="input-group">
+                    <label for="customerName" class="label-title">
+                        <span class="icon">👤</span> 客户名称
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="text" id="customerName" class="primary-input" placeholder="输入客户名称（可选）">
+                    </div>
+                </section>
+
+                <!-- Section: Area -->
+                <section class="input-group">
+                    <label for="areaInput" class="label-title">
+                        <span class="icon">📐</span> 绘制面积 (㎡)
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="number" id="areaInput" class="primary-input" placeholder="输入面积，例如 50" min="1"
+                            step="0.1">
+                        <span class="unit-tag">㎡</span>
+                    </div>
+                </section>
+
+                <!-- Section: Art Type (4 Image Cards) -->
+                <section class="input-group">
+                    <label class="label-title"><span class="icon">🎨</span> 墙绘类型</label>
+                    <div class="style-cards-grid">
+                        <label class="style-card">
+                            <input type="radio" name="artType" value="line" checked>
+                            <img src="style_line_art_v1_1766837331698.png" alt="线条简约">
+                            <span class="style-name">线条简约</span>
+                        </label>
+                        <label class="style-card">
+                            <input type="radio" name="artType" value="illustration">
+                            <img src="style_standard_illustration_v1_1766837354026.png" alt="插画设计">
+                            <span class="style-name">插画设计</span>
+                        </label>
+                        <label class="style-card">
+                            <input type="radio" name="artType" value="painterly">
+                            <img src="style_detailed_painterly_v1_retry_1766837387649.png" alt="艺术肘理">
+                            <span class="style-name">艺术肘理</span>
+                        </label>
+                        <label class="style-card">
+                            <input type="radio" name="artType" value="realism">
+                            <img src="style_3d_realism_wall_v1_retry_1766837410801.png" alt="写实/3D">
+                            <span class="style-name">写实/3D</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Section: Complexity -->
+                <section class="input-group">
+                    <label class="label-title"><span class="icon">⚡</span> 画面复杂度</label>
+                    <div class="technical-grid grid-3">
+                        <label class="tech-option">
+                            <input type="radio" name="complexity" value="simple">
+                            <span class="tech-label">简约</span>
+                        </label>
+                        <label class="tech-option">
+                            <input type="radio" name="complexity" value="medium" checked>
+                            <span class="tech-label">标准</span>
+                        </label>
+                        <label class="tech-option">
+                            <input type="radio" name="complexity" value="complex">
+                            <span class="tech-label">复杂</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Section: Scene -->
+                <section class="input-group">
+                    <label class="label-title"><span class="icon">🏘️</span> 垂直/特殊环境系数</label>
+                    <div class="technical-grid">
+                        <label class="tech-option">
+                            <input type="radio" name="scene" value="indoor" checked>
+                            <span class="tech-label">普通室内墙面</span>
+                        </label>
+                        <label class="tech-option">
+                            <input type="radio" name="scene" value="outdoor">
+                            <span class="tech-label">户外/外墙施工</span>
+                        </label>
+                        <label class="tech-option">
+                            <input type="radio" name="scene" value="ceiling">
+                            <span class="tech-label">高空天顶绘制</span>
+                        </label>
+                        <label class="tech-option">
+                            <input type="radio" name="scene" value="ground">
+                            <span class="tech-label">创意地面/台阶</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Section: Customer -->
+                <section class="input-group">
+                    <label class="label-title"><span class="icon">🤝</span> 合作方式</label>
+                    <div class="toggle-wrapper">
+                        <input type="checkbox" id="customerToggle" class="switch-input">
+                        <label for="customerToggle" class="switch-label">
+                            <span class="toggle-text" data-off="个人客户" data-on="企业/对公"></span>
+                            <span class="switch-handle"></span>
+                        </label>
+                </section>
+            </div>
+
+            <div class="vertical-divider"></div>
+
+            <div class="calculator-results">
+                <!-- Integrated Real-time Quote Card -->
+                <div id="sidebar-quote" class="quote-card sidebar-mode">
+                    <!-- Discreet Copy Action -->
+                    <button id="copy-quote-btn" class="floating-copy-btn" title="点击复制为图片">
+                        <span class="icon">📋</span> 复制图片
+                    </button>
+
+                    <header class="quote-header">
+                        <h2 class="quote-brand">姐姐墙绘 报价单</h2>
+                        <p class="quote-customer" id="preview-customer"></p>
+                        <p class="quote-id" id="preview-date">Date: 2024-12-27</p>
+                    </header>
+
+                    <div class="quote-visual-ref">
+                        <img id="preview-style-img" src="" alt="Visual Reference" class="preview-img">
+                        <span class="ref-tag">效果参考</span>
+                    </div>
+
+                    <div class="quote-body">
+                        <div class="quote-section">
+                            <h3 class="section-title">方案概览</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="label">设计类型</span>
+                                    <span id="preview-style-name" class="value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">难度等级</span>
+                                    <span id="preview-complexity" class="value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">预估面积</span>
+                                    <span id="preview-area" class="value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">环境方案</span>
+                                    <span id="preview-scene" class="value">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="divider-dashed"></div>
+
+                        <div class="quote-section">
+                            <h3 class="section-title">费用构成</h3>
+                            <div class="fee-table">
+                                <div class="fee-row">
+                                    <span>人工/材料基准</span>
+                                    <span id="preview-base-fee">¥0</span>
+                                </div>
+                                <div class="fee-row">
+                                    <span>规模减免</span>
+                                    <span id="preview-discount-fee">- ¥0</span>
+                                </div>
+                                <div class="fee-row highlight">
+                                    <span>预估折合总计</span>
+                                    <span id="preview-total-price-row">¥0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quote-summary">
+                            <div class="price-wrap">
+                                <span class="currency">¥</span>
+                                <span id="finalPrice" class="price">0</span>
+                            </div>
+                            <p class="price-notice">* 建议估算价，正式报价以合同为准</p>
+                        </div>
+                    </div>
+                    <div id="logicBadges" class="badges-container"></div>
+                </div>
+            </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
