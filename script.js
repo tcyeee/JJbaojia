@@ -155,10 +155,8 @@ function calculate() {
         display.badges.innerHTML = badges.join('');
     }
 
-    // 8. Update Technical Breakdown
-    document.getElementById('brk-unit-base').textContent = `¥${baseUnit}/㎡`;
-    document.getElementById('brk-coeff').textContent = `x ${(sceneCoeff * customerCoeff).toFixed(1)}`;
-    document.getElementById('brk-discount').textContent = `- ¥${discount * area}`;
+    // 8. Update Technical Breakdown (Removed in UI)
+    // Code removed as elements no longer exist
 
     // 9. Update Sidebar Preview Card (Real-time)
     updatePreviewUI();
@@ -194,11 +192,49 @@ copyBtn.addEventListener('click', async () => {
         // Add capturing class to hide button from screenshot
         target.classList.add('capturing');
 
+        // Wait for fonts to load to ensure icons are captured
+        await document.fonts.ready;
+
+        // Get the actual rendered dimensions
+        const rect = target.getBoundingClientRect();
+
         const canvas = await html2canvas(target, {
             useCORS: true,
-            allowTaint: true, // Allow tainted canvas for local files
-            scale: 2,
-            backgroundColor: '#ffffff'
+            allowTaint: true,
+            scale: 2, // High resolution for crisp text
+            backgroundColor: '#ffffff',
+            logging: false,
+            // Use precise bounding rect dimensions
+            width: Math.ceil(rect.width),
+            height: Math.ceil(rect.height),
+            // Don't modify the cloned element at all to preserve exact appearance
+            onclone: (clonedDoc) => {
+                const clonedTarget = clonedDoc.getElementById('sidebar-quote');
+                // Hide the button
+                const btn = clonedTarget.querySelector('.floating-copy-btn');
+                if (btn) btn.style.display = 'none';
+
+                // Fix object-fit: cover issue - html2canvas doesn't support it
+                // Convert img to a div with background-image to simulate object-fit: cover
+                const previewImg = clonedTarget.querySelector('.preview-img');
+                if (previewImg && previewImg.src) {
+                    const container = previewImg.parentElement;
+                    const imgSrc = previewImg.src;
+
+                    // Create a replacement div with background styling
+                    const bgDiv = clonedDoc.createElement('div');
+                    bgDiv.style.width = '100%';
+                    bgDiv.style.height = '100%';
+                    bgDiv.style.backgroundImage = `url(${imgSrc})`;
+                    bgDiv.style.backgroundSize = 'cover';
+                    bgDiv.style.backgroundPosition = 'center';
+                    bgDiv.style.filter = 'grayscale(100%)';
+                    bgDiv.style.opacity = '0.95';
+
+                    // Replace the img with the div
+                    container.replaceChild(bgDiv, previewImg);
+                }
+            }
         });
 
         canvas.toBlob(async (blob) => {

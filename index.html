@@ -9,8 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
         rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -25,7 +26,7 @@
                 <!-- Section: Customer Name -->
                 <section class="input-group">
                     <label for="customerName" class="label-title">
-                        <span class="icon">👤</span> 客户名称
+                        <i class="ri-user-smile-line icon"></i> 客户名称
                     </label>
                     <div class="input-wrapper">
                         <input type="text" id="customerName" class="primary-input" placeholder="输入客户名称（可选）">
@@ -35,7 +36,7 @@
                 <!-- Section: Area -->
                 <section class="input-group">
                     <label for="areaInput" class="label-title">
-                        <span class="icon">📐</span> 绘制面积 (㎡)
+                        <i class="ri-ruler-2-line icon"></i> 绘制面积 (㎡)
                     </label>
                     <div class="input-wrapper">
                         <input type="number" id="areaInput" class="primary-input" placeholder="输入面积，例如 50" min="1"
@@ -46,7 +47,7 @@
 
                 <!-- Section: Art Type (4 Image Cards) -->
                 <section class="input-group">
-                    <label class="label-title"><span class="icon">🎨</span> 墙绘类型</label>
+                    <label class="label-title"><i class="ri-palette-line icon"></i> 墙绘类型</label>
                     <div class="style-cards-grid">
                         <label class="style-card">
                             <input type="radio" name="artType" value="line" checked>
@@ -73,7 +74,7 @@
 
                 <!-- Section: Complexity -->
                 <section class="input-group">
-                    <label class="label-title"><span class="icon">⚡</span> 画面复杂度</label>
+                    <label class="label-title"><i class="ri-speed-up-line icon"></i> 画面复杂度</label>
                     <div class="technical-grid grid-3">
                         <label class="tech-option">
                             <input type="radio" name="complexity" value="simple">
@@ -92,7 +93,7 @@
 
                 <!-- Section: Scene -->
                 <section class="input-group">
-                    <label class="label-title"><span class="icon">🏘️</span> 垂直/特殊环境系数</label>
+                    <label class="label-title"><i class="ri-building-4-line icon"></i> 垂直/特殊环境系数</label>
                     <div class="technical-grid">
                         <label class="tech-option">
                             <input type="radio" name="scene" value="indoor" checked>
@@ -115,13 +116,14 @@
 
                 <!-- Section: Customer -->
                 <section class="input-group">
-                    <label class="label-title"><span class="icon">🤝</span> 合作方式</label>
+                    <label class="label-title"><i class="ri-shake-hands-line icon"></i> 合作方式</label>
                     <div class="toggle-wrapper">
                         <input type="checkbox" id="customerToggle" class="switch-input">
                         <label for="customerToggle" class="switch-label">
                             <span class="toggle-text" data-off="个人客户" data-on="企业/对公"></span>
                             <span class="switch-handle"></span>
                         </label>
+                    </div>
                 </section>
             </div>
 
@@ -132,7 +134,7 @@
                 <div id="sidebar-quote" class="quote-card sidebar-mode">
                     <!-- Discreet Copy Action -->
                     <button id="copy-quote-btn" class="floating-copy-btn" title="点击复制为图片">
-                        <span class="icon">📋</span> 复制图片
+                        <i class="ri-clipboard-line icon"></i> 复制图片
                     </button>
 
                     <header class="quote-header">
