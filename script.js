@@ -392,8 +392,8 @@ function updatePreviewUI() {
     const packMapping = {
         'line': { name: '线条简约', complexity: '标准', img: './public/type_1.png' },
         'illustration': { name: '现代插画', complexity: '标准', img: './public/type_2.jpg' },
-        'painterly': { name: '艺术肘理', complexity: '标准', img: './public/type_3.jpg' },
-        'realism': { name: '3D写实', complexity: '标准', img: './public/type_3.jpg' } // 与写实共用现有素材
+        'painterly': { name: '创意涂鸦', complexity: '标准', img: './public/type_3.jpg' },
+        'realism': { name: '3D写实', complexity: '标准', img: './public/type_4.png' } // 与写实共用现有素材
     };
 
     const pack = packMapping[type] || packMapping['illustration'];
