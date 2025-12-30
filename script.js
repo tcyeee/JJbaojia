@@ -18,22 +18,15 @@ const PRICES = {
         'painterly': 650,   // 艺术肘理
         'realism': 900      // 写实/3D
     },
-    complexity: {
-        'simple': 150,
-        'medium': 400,
-        'complex': 1050
-    },
     scene: {
         'indoor': 1.0,
         'outdoor': 1.2,
         'ceiling': 1.2,
         'ground': 1.3
-    },
-    customer: {
-        'individual': 1.0,
-        'company': 1.3
     }
 };
+
+const BASE_COMPLEXITY_PRICE = 400; // 固定标准难度单价
 
 const RULES = {
     minAreaThreshold: 10,
@@ -158,7 +151,6 @@ function calculate() {
     // 2. Base Unit Price from Type & Complexity
     const type = getRadioValue(inputs.types);
     const scene = getRadioValue(inputs.scenes);
-    const isCompany = false; // 合作方式已移除，默认个人
 
     if (area <= 0) {
         display.price.textContent = '0';
@@ -167,8 +159,7 @@ function calculate() {
     }
 
     const typePrice = getTypeUnitPrice(type);
-    const complexityPrice = PRICES.complexity.medium; // 固定标准难度
-    let baseUnit = typePrice + complexityPrice;
+    const baseUnit = typePrice + BASE_COMPLEXITY_PRICE;
 
     // 3. Area Discount Logic
     const discount = getDiscountPerSqm(area);
@@ -180,9 +171,8 @@ function calculate() {
 
     // 5. Coefficients
     const sceneCoeff = PRICES.scene[scene] || 1.0;
-    const customerCoeff = isCompany ? PRICES.customer.company : PRICES.customer.individual;
 
-    let total = subtotal * sceneCoeff * customerCoeff;
+    let total = subtotal * sceneCoeff;
 
     // 6. Boundary Rules (Min Price)
     let appliedRule = null;
@@ -383,17 +373,15 @@ function updatePreviewUI() {
     const area = parseFloat(inputs.area.value) || 0;
     const type = getRadioValue(inputs.types);
     const sceneValue = getRadioValue(inputs.scenes);
-    const isCompany = false; // 合作方式已移除，默认个人
-    const complexity = 'medium';
     const finalPriceText = display.price.textContent;
 
     // Internal mapping to Client-Friendly Names & References
     // 使用本地已有的参考图，确保 file:// 或本地服务器均可加载
     const packMapping = {
-        'line': { name: '线条简约', complexity: '标准', img: './public/type_1.png' },
-        'illustration': { name: '现代插画', complexity: '标准', img: './public/type_2.jpg' },
-        'painterly': { name: '创意涂鸦', complexity: '标准', img: './public/type_3.jpg' },
-        'realism': { name: '3D写实', complexity: '标准', img: './public/type_4.png' } // 与写实共用现有素材
+        'line': { name: '线条简约', img: './public/type_1.png' },
+        'illustration': { name: '现代插画', img: './public/type_2.jpg' },
+        'painterly': { name: '创意涂鸦', img: './public/type_3.jpg' },
+        'realism': { name: '3D写实', img: './public/type_4.JPG' } // 与写实共用现有素材
     };
 
     const pack = packMapping[type] || packMapping['illustration'];
@@ -407,25 +395,19 @@ function updatePreviewUI() {
 
     // Fees
     const typePrice = getTypeUnitPrice(type);
-    const complexityPrice = PRICES.complexity[complexity];
-    const baseUnit = typePrice + complexityPrice;
+    const baseUnit = typePrice + BASE_COMPLEXITY_PRICE;
 
     const discount = getDiscountPerSqm(area);
 
     const sceneCoeff = PRICES.scene[sceneValue] || 1.0;
-    const customerCoeff = isCompany ? PRICES.customer.company : PRICES.customer.individual;
 
     const baseFee = baseUnit * area;
     const discountFee = discount * area;
-    const finalCoeff = (sceneCoeff * customerCoeff).toFixed(1);
 
     // Update Elements (Using shared IDs if present in both, or specific selectors)
     // For sidebar mode, we use the IDs in index.html directly
     const styleNameEl = document.getElementById('preview-style-name');
     if (styleNameEl) styleNameEl.textContent = pack.name;
-
-    const complexityEl = document.getElementById('preview-complexity');
-    if (complexityEl) complexityEl.textContent = pack.complexity;
 
     const areaEl = document.getElementById('preview-area');
     if (areaEl) areaEl.textContent = `${area} m²`;
@@ -439,14 +421,8 @@ function updatePreviewUI() {
     const discountFeeEl = document.getElementById('preview-discount-fee');
     if (discountFeeEl) discountFeeEl.textContent = `- ¥${discountFee.toLocaleString()}`;
 
-    const coeffFeeEl = document.getElementById('preview-coeff-fee');
-    if (coeffFeeEl) coeffFeeEl.textContent = `x ${finalCoeff}`;
-
     const totalPriceRowEl = document.getElementById('preview-total-price-row');
     if (totalPriceRowEl) totalPriceRowEl.textContent = `¥${finalPriceText}`;
-
-    const previewTotalPriceEl = document.getElementById('preview-total-price');
-    if (previewTotalPriceEl) previewTotalPriceEl.textContent = finalPriceText;
 
     const previewImgEl = document.getElementById('preview-style-img');
     if (previewImgEl && pack.img) {
