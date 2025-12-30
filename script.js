@@ -4,7 +4,7 @@
  * Logic Constants:
  * 1. Type Median: A=400, B=800
  * 2. Complexity Median: Simple=150, Medium=400, Complex=1050
- * 3. Area Discounts: 150-300 = -50/m2, >300 = -100/m2
+ * 3. Area Discount: Unified per ㎡
  * 4. Scene Coeff: Outdoor=+20%, Ceiling=+20%, Ground=+30%
  * 5. Customer Coeff: Company=+30%
  * 6. Minimum Price: <=10m2 -> Min 5000
@@ -31,10 +31,7 @@ const BASE_COMPLEXITY_PRICE = 400; // 固定标准难度单价
 const RULES = {
     minAreaThreshold: 10,
     minPrice: 5000,
-    discounts: [
-        { min: 300, value: 100 }, // > 300
-        { min: 150, value: 50 }   // 150 - 300
-    ]
+    discountPerSqm: 50
 };
 
 // DOM Elements
@@ -49,16 +46,7 @@ const inputs = {
         painterly: document.getElementById('price-painterly'),
         realism: document.getElementById('price-realism')
     },
-    discounts: [
-        {
-            min: document.getElementById('discount-threshold-1'),
-            value: document.getElementById('discount-value-1')
-        },
-        {
-            min: document.getElementById('discount-threshold-2'),
-            value: document.getElementById('discount-value-2')
-        }
-    ]
+    discountFlat: document.getElementById('discount-flat-value')
 };
 
 const display = {
@@ -84,31 +72,10 @@ function getTypeUnitPrice(typeKey) {
     return Number.isFinite(value) && value > 0 ? value : PRICES.type[typeKey];
 }
 
-// Helper: discount rules from UI with fallback
-function getDiscountRules() {
-    return inputs.discounts
-        .map((pair, idx) => {
-            const fallback = RULES.discounts[idx];
-            const min = parseFloat(pair.min?.value);
-            const value = parseFloat(pair.value?.value);
-            if (Number.isFinite(min) && Number.isFinite(value) && min >= 0 && value >= 0) {
-                return { min, value };
-            }
-            return fallback;
-        })
-        .filter(Boolean)
-        .sort((a, b) => a.min - b.min);
-}
-
 function getDiscountPerSqm(area) {
-    const rules = getDiscountRules();
-    let discount = 0;
-    for (const rule of rules) {
-        if (area >= rule.min) {
-            discount = rule.value;
-        }
-    }
-    return discount;
+    const value = parseFloat(inputs.discountFlat?.value);
+    if (Number.isFinite(value) && value >= 0) return value;
+    return RULES.discountPerSqm;
 }
 
 // Helper: Toggle visible price input by selected type
@@ -236,10 +203,9 @@ inputs.scenes.forEach(r => r.addEventListener('change', calculate));
 Object.values(inputs.typePrices).forEach(input => {
     if (input) input.addEventListener('input', calculate);
 });
-inputs.discounts.forEach(pair => {
-    if (pair.min) pair.min.addEventListener('input', calculate);
-    if (pair.value) pair.value.addEventListener('input', calculate);
-});
+if (inputs.discountFlat) {
+    inputs.discountFlat.addEventListener('input', calculate);
+}
 
 // Customer Name Event
 inputs.customerName.addEventListener('input', () => {
@@ -296,7 +262,7 @@ copyBtn.addEventListener('click', async () => {
                     bgDiv.style.backgroundImage = `url(${imgSrc})`;
                     bgDiv.style.backgroundSize = 'cover';
                     bgDiv.style.backgroundPosition = 'center';
-                    bgDiv.style.filter = 'grayscale(100%)';
+                    bgDiv.style.filter = 'none';
                     bgDiv.style.opacity = '0.95';
 
                     // Replace the img with the div

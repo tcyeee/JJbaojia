@@ -265,7 +265,6 @@ h4 {
     height: 100px;
     /* Efficient height */
     object-fit: cover;
-    filter: grayscale(100%);
     transition: all var(--transition-fast);
     display: block;
     border: 1px solid var(--color-border);
@@ -283,14 +282,12 @@ h4 {
 
 /* Style Card Interactions */
 .style-card:hover img {
-    filter: grayscale(0%);
     box-shadow: var(--shadow-subtle);
 }
 
 .style-card input:checked~img {
-    filter: grayscale(0%);
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 1px var(--color-accent);
+    border-color: #000;
+    box-shadow: 0 0 0 1px #000;
     /* sharp internal border */
 }
 
@@ -429,7 +426,6 @@ h4 {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: grayscale(100%);
     opacity: 0.95;
     mix-blend-mode: multiply;
     /* Better integration with paper */
