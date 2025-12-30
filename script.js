@@ -43,7 +43,8 @@ const inputs = {
         painterly: document.getElementById('price-painterly'),
         realism: document.getElementById('price-realism')
     },
-    discountFlat: document.getElementById('discount-flat-value')
+    discountFlat: document.getElementById('discount-flat-value'),
+    discountMaterial: document.getElementById('discount-material-value')
 };
 
 const display = {
@@ -69,10 +70,14 @@ function getTypeUnitPrice(typeKey) {
     return Number.isFinite(value) && value > 0 ? value : PRICES.type[typeKey];
 }
 
-function getDiscountPerSqm(area) {
-    const value = parseFloat(inputs.discountFlat?.value);
-    if (Number.isFinite(value) && value >= 0) return value;
-    return RULES.discountPerSqm;
+function getDiscountPerSqm() {
+    const flat = parseFloat(inputs.discountFlat?.value);
+    return Number.isFinite(flat) && flat >= 0 ? flat : RULES.discountPerSqm;
+}
+
+function getMaterialDiscount() {
+    const material = parseFloat(inputs.discountMaterial?.value);
+    return Number.isFinite(material) && material >= 0 ? material : 0;
 }
 
 // Helper: Toggle visible price input by selected type
@@ -125,9 +130,10 @@ function calculate() {
     const typePrice = getTypeUnitPrice(type);
 
     // 3. Area Discount Logic
-    const discount = getDiscountPerSqm(area);
+    const discountPerSqm = getDiscountPerSqm();
+    const materialDiscount = getMaterialDiscount();
 
-    let discountedUnit = typePrice - discount;
+    let discountedUnit = typePrice - discountPerSqm;
 
     // 4. Subtotal
     let subtotal = discountedUnit * area;
@@ -136,6 +142,12 @@ function calculate() {
     const sceneCoeff = PRICES.scene[scene] || 1.0;
 
     let total = subtotal * sceneCoeff;
+
+    // 6. Material discount on total
+    total -= materialDiscount;
+
+    // Ensure non-negative before boundary checks
+    total = Math.max(total, 0);
 
     // 6. Boundary Rules (Min Price)
     let appliedRule = null;
@@ -156,8 +168,11 @@ function calculate() {
 
     // Badges
     const badges = [];
-    if (discount > 0) {
-        badges.push(`<span class="badge discount">大面积优惠 -${discount}/㎡</span>`);
+    if (discountPerSqm > 0) {
+        badges.push(`<span class="badge discount">大面积优惠 -${discountPerSqm}/㎡</span>`);
+    }
+    if (materialDiscount > 0) {
+        badges.push(`<span class="badge discount">材料减免 -¥${materialDiscount}</span>`);
     }
     if (appliedRule) {
         badges.push(`<span class="badge boundary">${appliedRule} (¥${RULES.minPrice})</span>`);
@@ -201,6 +216,9 @@ Object.values(inputs.typePrices).forEach(input => {
 });
 if (inputs.discountFlat) {
     inputs.discountFlat.addEventListener('input', calculate);
+}
+if (inputs.discountMaterial) {
+    inputs.discountMaterial.addEventListener('input', calculate);
 }
 
 // Customer Name Event
@@ -358,8 +376,9 @@ function updatePreviewUI(finalPriceValue) {
     };
 
     // Fees
-    const discount = getDiscountPerSqm(area);
-    const discountFee = discount * area;
+    const discountPerSqm = getDiscountPerSqm();
+    const materialDiscount = getMaterialDiscount();
+    const discountFee = discountPerSqm * area + materialDiscount;
 
     // Update Elements (Using shared IDs if present in both, or specific selectors)
     // For sidebar mode, we use the IDs in index.html directly
