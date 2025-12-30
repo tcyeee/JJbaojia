@@ -49,14 +49,29 @@ const inputs = {
     customerName: document.getElementById('customerName'),
     area: document.getElementById('areaInput'),
     types: document.getElementsByName('artType'),
-    complexities: document.getElementsByName('complexity'),
     scenes: document.getElementsByName('scene'),
-    customer: document.getElementById('customerToggle')
+    typePrices: {
+        line: document.getElementById('price-line'),
+        illustration: document.getElementById('price-illustration'),
+        painterly: document.getElementById('price-painterly'),
+        realism: document.getElementById('price-realism')
+    },
+    discounts: [
+        {
+            min: document.getElementById('discount-threshold-1'),
+            value: document.getElementById('discount-value-1')
+        },
+        {
+            min: document.getElementById('discount-threshold-2'),
+            value: document.getElementById('discount-value-2')
+        }
+    ]
 };
 
 const display = {
     price: document.getElementById('finalPrice'),
-    badges: document.getElementById('logicBadges')
+    badges: document.getElementById('logicBadges'),
+    priceWarning: document.getElementById('final-price-warning')
 };
 
 // Helper: Get Checked Radio Value
@@ -65,6 +80,56 @@ function getRadioValue(nodeList) {
         if (radio.checked) return radio.value;
     }
     return null;
+}
+
+// Helper: Get type price with fallback to defaults
+function getTypeUnitPrice(typeKey) {
+    const input = inputs.typePrices?.[typeKey];
+    if (!input) return PRICES.type[typeKey];
+
+    const value = parseFloat(input.value);
+    return Number.isFinite(value) && value > 0 ? value : PRICES.type[typeKey];
+}
+
+// Helper: discount rules from UI with fallback
+function getDiscountRules() {
+    return inputs.discounts
+        .map((pair, idx) => {
+            const fallback = RULES.discounts[idx];
+            const min = parseFloat(pair.min?.value);
+            const value = parseFloat(pair.value?.value);
+            if (Number.isFinite(min) && Number.isFinite(value) && min >= 0 && value >= 0) {
+                return { min, value };
+            }
+            return fallback;
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.min - b.min);
+}
+
+function getDiscountPerSqm(area) {
+    const rules = getDiscountRules();
+    let discount = 0;
+    for (const rule of rules) {
+        if (area >= rule.min) {
+            discount = rule.value;
+        }
+    }
+    return discount;
+}
+
+// Helper: Toggle visible price input by selected type
+function updateTypePriceVisibility() {
+    const selected = getRadioValue(inputs.types);
+    Object.entries(inputs.typePrices).forEach(([type, input]) => {
+        const item = input?.closest('.custom-price-item');
+        if (!item) return;
+        if (type === selected) {
+            item.classList.remove('hidden');
+        } else {
+            item.classList.add('hidden');
+        }
+    });
 }
 
 // Format Currency
@@ -92,9 +157,8 @@ function calculate() {
     const area = parseFloat(inputs.area.value) || 0;
     // 2. Base Unit Price from Type & Complexity
     const type = getRadioValue(inputs.types);
-    const complexity = getRadioValue(inputs.complexities);
     const scene = getRadioValue(inputs.scenes);
-    const isCompany = inputs.customer.checked;
+    const isCompany = false; // 合作方式已移除，默认个人
 
     if (area <= 0) {
         display.price.textContent = '0';
@@ -102,17 +166,12 @@ function calculate() {
         return;
     }
 
-    const typePrice = PRICES.type[type];
-    const complexityPrice = PRICES.complexity[complexity];
+    const typePrice = getTypeUnitPrice(type);
+    const complexityPrice = PRICES.complexity.medium; // 固定标准难度
     let baseUnit = typePrice + complexityPrice;
 
     // 3. Area Discount Logic
-    let discount = 0;
-    if (area > 300) {
-        discount = 100;
-    } else if (area >= 150) {
-        discount = 50;
-    }
+    const discount = getDiscountPerSqm(area);
 
     let discountedUnit = baseUnit - discount;
 
@@ -155,6 +214,16 @@ function calculate() {
         display.badges.innerHTML = badges.join('');
     }
 
+    // Price warning
+    if (display.priceWarning) {
+        if (appliedRule) {
+            display.priceWarning.textContent = `${appliedRule}，按 ¥${RULES.minPrice.toLocaleString()} 计价`;
+            display.priceWarning.classList.remove('hidden');
+        } else {
+            display.priceWarning.classList.add('hidden');
+        }
+    }
+
     // 8. Update Technical Breakdown (Removed in UI)
     // Code removed as elements no longer exist
 
@@ -167,11 +236,20 @@ inputs.area.addEventListener('input', () => {
     localStorage.setItem('painting_area', inputs.area.value);
     calculate();
 });
-inputs.customer.addEventListener('change', calculate);
+const handleTypeChange = () => {
+    updateTypePriceVisibility();
+    calculate();
+};
 
-inputs.types.forEach(r => r.addEventListener('change', calculate));
-inputs.complexities.forEach(r => r.addEventListener('change', calculate));
+inputs.types.forEach(r => r.addEventListener('change', handleTypeChange));
 inputs.scenes.forEach(r => r.addEventListener('change', calculate));
+Object.values(inputs.typePrices).forEach(input => {
+    if (input) input.addEventListener('input', calculate);
+});
+inputs.discounts.forEach(pair => {
+    if (pair.min) pair.min.addEventListener('input', calculate);
+    if (pair.value) pair.value.addEventListener('input', calculate);
+});
 
 // Customer Name Event
 inputs.customerName.addEventListener('input', () => {
@@ -304,29 +382,20 @@ function getImageAsDataURL(url) {
 function updatePreviewUI() {
     const area = parseFloat(inputs.area.value) || 0;
     const type = getRadioValue(inputs.types);
-    const complexity = getRadioValue(inputs.complexities);
     const sceneValue = getRadioValue(inputs.scenes);
-    const isCompany = inputs.customer.checked;
+    const isCompany = false; // 合作方式已移除，默认个人
+    const complexity = 'medium';
     const finalPriceText = display.price.textContent;
 
     // Internal mapping to Client-Friendly Names & References
     const packMapping = {
-        'line-simple': { name: '线条简约', complexity: '简约', img: 'style_line_art_v1_1766837331698.png' },
-        'line-medium': { name: '线条插画', complexity: '标准', img: 'style_line_art_v1_1766837331698.png' },
-        'line-complex': { name: '精细线条', complexity: '复杂', img: 'style_line_art_v1_1766837331698.png' },
-        'illustration-simple': { name: '简约插画', complexity: '简约', img: 'style_standard_illustration_v1_1766837354026.png' },
-        'illustration-medium': { name: '现代插画', complexity: '标准', img: 'style_standard_illustration_v1_1766837354026.png' },
-        'illustration-complex': { name: '精细插画', complexity: '复杂', img: 'style_standard_illustration_v1_1766837354026.png' },
-        'painterly-simple': { name: '简约肘理', complexity: '简约', img: 'style_detailed_painterly_v1_retry_1766837387649.png' },
-        'painterly-medium': { name: '艺术肘理', complexity: '标准', img: 'style_detailed_painterly_v1_retry_1766837387649.png' },
-        'painterly-complex': { name: '精细肘理', complexity: '复杂', img: 'style_detailed_painterly_v1_retry_1766837387649.png' },
-        'realism-simple': { name: '简约写实', complexity: '简约', img: 'style_3d_realism_wall_v1_retry_1766837410801.png' },
-        'realism-medium': { name: '3D写实', complexity: '标准', img: 'style_3d_realism_wall_v1_retry_1766837410801.png' },
-        'realism-complex': { name: '超写实', complexity: '复杂', img: 'style_3d_realism_wall_v1_retry_1766837410801.png' }
+        'line': { name: '线条简约', complexity: '标准', img: 'style_line_art_v1_1766837331698.png' },
+        'illustration': { name: '现代插画', complexity: '标准', img: 'style_standard_illustration_v1_1766837354026.png' },
+        'painterly': { name: '艺术肘理', complexity: '标准', img: 'style_detailed_painterly_v1_retry_1766837387649.png' },
+        'realism': { name: '3D写实', complexity: '标准', img: 'style_3d_realism_wall_v1_retry_1766837410801.png' }
     };
 
-    const key = `${type}-${complexity}`;
-    const pack = packMapping[key] || packMapping['A-medium'];
+    const pack = packMapping[type] || packMapping['illustration'];
 
     const sceneNames = {
         'indoor': '高品质室内',
@@ -336,13 +405,11 @@ function updatePreviewUI() {
     };
 
     // Fees
-    const typePrice = PRICES.type[type];
+    const typePrice = getTypeUnitPrice(type);
     const complexityPrice = PRICES.complexity[complexity];
     const baseUnit = typePrice + complexityPrice;
 
-    let discount = 0;
-    if (area > 300) discount = 100;
-    else if (area >= 150) discount = 50;
+    const discount = getDiscountPerSqm(area);
 
     const sceneCoeff = PRICES.scene[sceneValue] || 1.0;
     const customerCoeff = isCompany ? PRICES.customer.company : PRICES.customer.individual;
@@ -406,6 +473,7 @@ if (cachedArea) {
 }
 
 // Initial Calculation
+updateTypePriceVisibility();
 calculate();
 
 // Add global fade-in

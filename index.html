@@ -51,7 +51,7 @@
                     <div class="style-cards-grid">
                         <label class="style-card">
                             <input type="radio" name="artType" value="line" checked>
-                            <img src="style_line_art_v1_1766837331698.png" alt="线条简约">
+                            <img src="./public/type_1.png" alt="线条简约">
                             <span class="style-name">线条简约</span>
                         </label>
                         <label class="style-card">
@@ -72,22 +72,42 @@
                     </div>
                 </section>
 
-                <!-- Section: Complexity -->
+                <!-- Section: Custom Unit Price -->
                 <section class="input-group">
-                    <label class="label-title"><i class="ri-speed-up-line icon"></i> 画面复杂度</label>
-                    <div class="technical-grid grid-3">
-                        <label class="tech-option">
-                            <input type="radio" name="complexity" value="simple">
-                            <span class="tech-label">简约</span>
-                        </label>
-                        <label class="tech-option">
-                            <input type="radio" name="complexity" value="medium" checked>
-                            <span class="tech-label">标准</span>
-                        </label>
-                        <label class="tech-option">
-                            <input type="radio" name="complexity" value="complex">
-                            <span class="tech-label">复杂</span>
-                        </label>
+                    <label class="label-title"><i class="ri-money-cny-circle-line icon"></i> 自定义单价 (¥/㎡)</label>
+                    <div class="custom-price-grid">
+                        <div class="custom-price-item" data-type="line">
+                            <span class="custom-price-name">线条简约</span>
+                            <div class="input-wrapper">
+                                <input type="number" id="price-line" class="primary-input price-input" value="300"
+                                    min="0" step="10">
+                                <span class="unit-tag">¥/㎡</span>
+                            </div>
+                        </div>
+                        <div class="custom-price-item" data-type="illustration">
+                            <span class="custom-price-name">插画设计</span>
+                            <div class="input-wrapper">
+                                <input type="number" id="price-illustration" class="primary-input price-input"
+                                    value="450" min="0" step="10">
+                                <span class="unit-tag">¥/㎡</span>
+                            </div>
+                        </div>
+                        <div class="custom-price-item" data-type="painterly">
+                            <span class="custom-price-name">艺术肘理</span>
+                            <div class="input-wrapper">
+                                <input type="number" id="price-painterly" class="primary-input price-input" value="650"
+                                    min="0" step="10">
+                                <span class="unit-tag">¥/㎡</span>
+                            </div>
+                        </div>
+                        <div class="custom-price-item" data-type="realism">
+                            <span class="custom-price-name">写实/3D</span>
+                            <div class="input-wrapper">
+                                <input type="number" id="price-realism" class="primary-input price-input" value="900"
+                                    min="0" step="10">
+                                <span class="unit-tag">¥/㎡</span>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -114,17 +134,49 @@
                     </div>
                 </section>
 
-                <!-- Section: Customer -->
+                <!-- Section: 规模减免 -->
                 <section class="input-group">
-                    <label class="label-title"><i class="ri-shake-hands-line icon"></i> 合作方式</label>
-                    <div class="toggle-wrapper">
-                        <input type="checkbox" id="customerToggle" class="switch-input">
-                        <label for="customerToggle" class="switch-label">
-                            <span class="toggle-text" data-off="个人客户" data-on="企业/对公"></span>
-                            <span class="switch-handle"></span>
-                        </label>
+                    <label class="label-title"><i class="ri-scales-2-line icon"></i> 规模减免 (按㎡减免)</label>
+                    <div class="discount-grid">
+                        <div class="discount-item">
+                            <div class="discount-row">
+                                <span class="discount-label">面积 ≥</span>
+                                <div class="input-wrapper">
+                                    <input type="number" id="discount-threshold-1" class="primary-input price-input"
+                                        value="150" min="0" step="10">
+                                    <span class="unit-tag">㎡</span>
+                                </div>
+                            </div>
+                            <div class="discount-row">
+                                <span class="discount-label">减免</span>
+                                <div class="input-wrapper">
+                                    <input type="number" id="discount-value-1" class="primary-input price-input"
+                                        value="50" min="0" step="10">
+                                    <span class="unit-tag">¥/㎡</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="discount-item">
+                            <div class="discount-row">
+                                <span class="discount-label">面积 ≥</span>
+                                <div class="input-wrapper">
+                                    <input type="number" id="discount-threshold-2" class="primary-input price-input"
+                                        value="300" min="0" step="10">
+                                    <span class="unit-tag">㎡</span>
+                                </div>
+                            </div>
+                            <div class="discount-row">
+                                <span class="discount-label">减免</span>
+                                <div class="input-wrapper">
+                                    <input type="number" id="discount-value-2" class="primary-input price-input"
+                                        value="100" min="0" step="10">
+                                    <span class="unit-tag">¥/㎡</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
+
             </div>
 
             <div class="vertical-divider"></div>
@@ -140,7 +192,7 @@
                     <header class="quote-header">
                         <h2 class="quote-brand">姐姐墙绘 报价单</h2>
                         <p class="quote-customer" id="preview-customer"></p>
-                        <p class="quote-id" id="preview-date">Date: 2024-12-27</p>
+                        <p class="quote-id" id="preview-date">Date: --</p>
                     </header>
 
                     <div class="quote-visual-ref">
@@ -155,10 +207,6 @@
                                 <div class="info-item">
                                     <span class="label">设计类型</span>
                                     <span id="preview-style-name" class="value">-</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">难度等级</span>
-                                    <span id="preview-complexity" class="value">-</span>
                                 </div>
                                 <div class="info-item">
                                     <span class="label">预估面积</span>
@@ -197,6 +245,7 @@
                                 <span id="finalPrice" class="price">0</span>
                             </div>
                             <p class="price-notice">* 建议估算价，正式报价以合同为准</p>
+                            <p id="final-price-warning" class="price-warning hidden">已应用起步价保护</p>
                         </div>
                     </div>
                     <div id="logicBadges" class="badges-container"></div>

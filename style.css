@@ -173,6 +173,78 @@ h4 {
     pointer-events: none;
 }
 
+/* Custom Price Inputs */
+.custom-price-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.custom-price-item {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    padding: 12px 12px 10px;
+}
+
+.custom-price-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-main);
+    letter-spacing: 0.02em;
+}
+
+.custom-price-item .input-wrapper {
+    margin-top: 8px;
+}
+
+.price-input {
+    padding-right: 48px;
+    font-size: 1rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Discount Config */
+.discount-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.discount-item {
+    border: 1px solid var(--color-border);
+    padding: 12px;
+    background: var(--color-surface);
+    display: grid;
+    gap: 10px;
+}
+
+.discount-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    align-items: center;
+    gap: 8px;
+}
+
+.discount-label {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+@media (max-width: 820px) {
+    .discount-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.hidden {
+    display: none !important;
+}
+
 /* Style Cards Grid */
 .style-cards-grid {
     display: grid;
@@ -604,6 +676,14 @@ h4 {
     color: var(--color-main);
 }
 
+.price-warning {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: #B00020;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
 /* Floating Actions */
 .floating-copy-btn {
     position: absolute;
@@ -743,5 +823,9 @@ h4 {
 
     .style-cards-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .custom-price-grid {
+        grid-template-columns: 1fr;
     }
 }
