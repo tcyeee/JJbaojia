@@ -389,7 +389,7 @@ function updatePreviewUI() {
 
     // Internal mapping to Client-Friendly Names & References
     const packMapping = {
-        'line': { name: '线条简约', complexity: '标准', img: 'style_line_art_v1_1766837331698.png' },
+        'line': { name: '线条简约', complexity: '标准', img: './public/type_1.png' },
         'illustration': { name: '现代插画', complexity: '标准', img: 'style_standard_illustration_v1_1766837354026.png' },
         'painterly': { name: '艺术肘理', complexity: '标准', img: 'style_detailed_painterly_v1_retry_1766837387649.png' },
         'realism': { name: '3D写实', complexity: '标准', img: 'style_3d_realism_wall_v1_retry_1766837410801.png' }
@@ -462,7 +462,13 @@ function updatePreviewUI() {
     const customerNameEl = document.getElementById('preview-customer');
     const customerNameValue = inputs.customerName ? inputs.customerName.value.trim() : '';
     if (customerNameEl) {
-        customerNameEl.textContent = customerNameValue ? `尊敬的 ${customerNameValue}` : '';
+        if (customerNameValue) {
+            customerNameEl.textContent = `尊敬的 ${customerNameValue}`;
+            customerNameEl.classList.remove('hidden');
+        } else {
+            customerNameEl.textContent = '';
+            customerNameEl.classList.add('hidden');
+        }
     }
 }
 
