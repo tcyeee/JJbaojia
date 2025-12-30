@@ -388,11 +388,12 @@ function updatePreviewUI() {
     const finalPriceText = display.price.textContent;
 
     // Internal mapping to Client-Friendly Names & References
+    // 使用本地已有的参考图，确保 file:// 或本地服务器均可加载
     const packMapping = {
         'line': { name: '线条简约', complexity: '标准', img: './public/type_1.png' },
-        'illustration': { name: '现代插画', complexity: '标准', img: 'style_standard_illustration_v1_1766837354026.png' },
-        'painterly': { name: '艺术肘理', complexity: '标准', img: 'style_detailed_painterly_v1_retry_1766837387649.png' },
-        'realism': { name: '3D写实', complexity: '标准', img: 'style_3d_realism_wall_v1_retry_1766837410801.png' }
+        'illustration': { name: '现代插画', complexity: '标准', img: './public/type_2.jpg' },
+        'painterly': { name: '艺术肘理', complexity: '标准', img: './public/type_3.jpg' },
+        'realism': { name: '3D写实', complexity: '标准', img: './public/type_3.jpg' } // 与写实共用现有素材
     };
 
     const pack = packMapping[type] || packMapping['illustration'];
