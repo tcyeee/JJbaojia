@@ -1,13 +1,12 @@
 /**
  * Wall Painting Quote Tool - Logic V0
- * 
- * Logic Constants:
- * 1. Type Median: A=400, B=800
- * 2. Complexity Median: Simple=150, Medium=400, Complex=1050
- * 3. Area Discount: Unified per ㎡
- * 4. Scene Coeff: Outdoor=+20%, Ceiling=+20%, Ground=+30%
- * 5. Customer Coeff: Company=+30%
- * 6. Minimum Price: <=10m2 -> Min 5000
+ *
+ * Logic Points:
+ * 1. Type unit price defaults in PRICES.type
+ * 2. Area Discount: Unified per ㎡
+ * 3. Scene Coeff: Outdoor=+20%, Ceiling=+20%, Ground=+30%
+ * 4. Customer Coeff: Company=+30%
+ * 5. Minimum Price: <=10m2 -> Min 5000
  */
 
 // Constants
@@ -25,8 +24,6 @@ const PRICES = {
         'ground': 1.3
     }
 };
-
-const BASE_COMPLEXITY_PRICE = 400; // 固定标准难度单价
 
 const RULES = {
     minAreaThreshold: 10,
@@ -126,12 +123,11 @@ function calculate() {
     }
 
     const typePrice = getTypeUnitPrice(type);
-    const baseUnit = typePrice + BASE_COMPLEXITY_PRICE;
 
     // 3. Area Discount Logic
     const discount = getDiscountPerSqm(area);
 
-    let discountedUnit = baseUnit - discount;
+    let discountedUnit = typePrice - discount;
 
     // 4. Subtotal
     let subtotal = discountedUnit * area;
@@ -184,8 +180,8 @@ function calculate() {
     // 8. Update Technical Breakdown (Removed in UI)
     // Code removed as elements no longer exist
 
-    // 9. Update Sidebar Preview Card (Real-time)
-    updatePreviewUI();
+    // 9. Update Sidebar Preview Card (Real-time) - pass computed total to avoid animation delay mismatch
+    updatePreviewUI(finalPrice);
 }
 
 // Event Listeners
@@ -335,11 +331,13 @@ function getImageAsDataURL(url) {
 /**
  * Update Preview UI (For Sidebar)
  */
-function updatePreviewUI() {
+function updatePreviewUI(finalPriceValue) {
     const area = parseFloat(inputs.area.value) || 0;
     const type = getRadioValue(inputs.types);
     const sceneValue = getRadioValue(inputs.scenes);
-    const finalPriceText = display.price.textContent;
+    const finalPriceText = typeof finalPriceValue === 'number'
+        ? currencyFormatter.format(finalPriceValue)
+        : display.price.textContent;
 
     // Internal mapping to Client-Friendly Names & References
     // 使用本地已有的参考图，确保 file:// 或本地服务器均可加载
@@ -360,14 +358,7 @@ function updatePreviewUI() {
     };
 
     // Fees
-    const typePrice = getTypeUnitPrice(type);
-    const baseUnit = typePrice + BASE_COMPLEXITY_PRICE;
-
     const discount = getDiscountPerSqm(area);
-
-    const sceneCoeff = PRICES.scene[sceneValue] || 1.0;
-
-    const baseFee = baseUnit * area;
     const discountFee = discount * area;
 
     // Update Elements (Using shared IDs if present in both, or specific selectors)
@@ -380,9 +371,6 @@ function updatePreviewUI() {
 
     const sceneEl = document.getElementById('preview-scene');
     if (sceneEl) sceneEl.textContent = sceneNames[sceneValue];
-
-    const baseFeeEl = document.getElementById('preview-base-fee');
-    if (baseFeeEl) baseFeeEl.textContent = `¥${baseFee.toLocaleString()}`;
 
     const discountFeeEl = document.getElementById('preview-discount-fee');
     if (discountFeeEl) discountFeeEl.textContent = `- ¥${discountFee.toLocaleString()}`;
