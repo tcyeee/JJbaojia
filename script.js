@@ -249,12 +249,15 @@ copyBtn.addEventListener('click', async () => {
         const canvas = await html2canvas(target, {
             useCORS: true,
             allowTaint: true,
-            scale: 2, // High resolution for crisp text
+            scale: 6, // 进一步提高分辨率 (6x)
             backgroundColor: '#ffffff',
             logging: false,
-            // Use precise bounding rect dimensions
-            width: Math.ceil(rect.width),
-            height: Math.ceil(rect.height),
+            // 显式指定源尺寸，防止自动检测错误
+            width: rect.width,
+            height: rect.height,
+            // 确保渲染上下文足够大
+            windowWidth: document.documentElement.scrollWidth,
+            windowHeight: document.documentElement.scrollHeight,
             // Don't modify the cloned element at all to preserve exact appearance
             onclone: (clonedDoc) => {
                 const clonedTarget = clonedDoc.getElementById('sidebar-quote');
@@ -290,7 +293,8 @@ copyBtn.addEventListener('click', async () => {
                 if (navigator.clipboard && window.ClipboardItem) {
                     const data = [new ClipboardItem({ [blob.type]: blob })];
                     await navigator.clipboard.write(data);
-                    copyBtn.textContent = '✅ 已成功复制到剪贴板';
+                    // 显示详细的调试信息：源宽度 -> 输出宽度
+                    copyBtn.textContent = `✅ ${Math.round(rect.width)}px -> ${canvas.width}px`;
                 } else {
                     throw new Error('Clipboard API unavailable');
                 }
