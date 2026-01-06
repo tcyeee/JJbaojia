@@ -31,6 +31,8 @@ const RULES = {
     discountPerSqm: 50
 };
 
+const CAPTURE_SCALE = 6;
+
 // DOM Elements
 const inputs = {
     customerName: document.getElementById('customerName'),
@@ -249,42 +251,17 @@ copyBtn.addEventListener('click', async () => {
         const canvas = await html2canvas(target, {
             useCORS: true,
             allowTaint: true,
-            scale: 6, // 进一步提高分辨率 (6x)
+            scale: CAPTURE_SCALE,
             backgroundColor: '#ffffff',
             logging: false,
-            // 显式指定源尺寸，防止自动检测错误
             width: rect.width,
             height: rect.height,
-            // 确保渲染上下文足够大
             windowWidth: document.documentElement.scrollWidth,
             windowHeight: document.documentElement.scrollHeight,
-            // Don't modify the cloned element at all to preserve exact appearance
             onclone: (clonedDoc) => {
                 const clonedTarget = clonedDoc.getElementById('sidebar-quote');
-                // Hide the button
                 const btn = clonedTarget.querySelector('.floating-copy-btn');
                 if (btn) btn.style.display = 'none';
-
-                // Fix object-fit: cover issue - html2canvas doesn't support it
-                // Convert img to a div with background-image to simulate object-fit: cover
-                const previewImg = clonedTarget.querySelector('.preview-img');
-                if (previewImg && previewImg.src) {
-                    const container = previewImg.parentElement;
-                    const imgSrc = previewImg.src;
-
-                    // Create a replacement div with background styling
-                    const bgDiv = clonedDoc.createElement('div');
-                    bgDiv.style.width = '100%';
-                    bgDiv.style.height = '100%';
-                    bgDiv.style.backgroundImage = `url(${imgSrc})`;
-                    bgDiv.style.backgroundSize = 'cover';
-                    bgDiv.style.backgroundPosition = 'center';
-                    bgDiv.style.filter = 'none';
-                    bgDiv.style.opacity = '0.95';
-
-                    // Replace the img with the div
-                    container.replaceChild(bgDiv, previewImg);
-                }
             }
         });
 
@@ -293,7 +270,6 @@ copyBtn.addEventListener('click', async () => {
                 if (navigator.clipboard && window.ClipboardItem) {
                     const data = [new ClipboardItem({ [blob.type]: blob })];
                     await navigator.clipboard.write(data);
-                    // 显示详细的调试信息：源宽度 -> 输出宽度
                     copyBtn.textContent = `✅ ${Math.round(rect.width)}px -> ${canvas.width}px`;
                 } else {
                     throw new Error('Clipboard API unavailable');
@@ -344,6 +320,37 @@ function getImageAsDataURL(url) {
         };
         img.onerror = () => {
             console.warn('Failed to load image for DataURL:', url);
+            resolve(url);
+        };
+        img.src = url;
+    });
+}
+
+function getImageCoverDataURL(url, targetW, targetH, scale = 1) {
+    const key = `${url}|${targetW}|${targetH}|${scale}`;
+    if (imageCache.has(key)) return Promise.resolve(imageCache.get(key));
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            const iw = img.width;
+            const ih = img.height;
+            const rw = targetW / iw;
+            const rh = targetH / ih;
+            const r = Math.max(rw, rh);
+            const sw = Math.min(iw, Math.round(targetW / r));
+            const sh = Math.min(ih, Math.round(targetH / r));
+            const sx = Math.max(0, Math.round((iw - sw) / 2));
+            const sy = Math.max(0, Math.round((ih - sh) / 2));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(targetW * scale));
+            canvas.height = Math.max(1, Math.round(targetH * scale));
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+            const dataURL = canvas.toDataURL('image/png');
+            imageCache.set(key, dataURL);
+            resolve(dataURL);
+        };
+        img.onerror = () => {
             resolve(url);
         };
         img.src = url;
@@ -403,8 +410,10 @@ function updatePreviewUI(finalPriceValue) {
 
     const previewImgEl = document.getElementById('preview-style-img');
     if (previewImgEl && pack.img) {
-        // Use DataURL to prevent tainted canvas issue during screenshot
-        getImageAsDataURL(pack.img).then(dataUrl => {
+        const container = document.querySelector('.quote-visual-ref');
+        const w = Math.max(1, Math.round(container ? container.offsetWidth : previewImgEl.offsetWidth));
+        const h = Math.max(1, Math.round(container ? container.offsetHeight : previewImgEl.offsetHeight));
+        getImageCoverDataURL(pack.img, w, h, CAPTURE_SCALE).then(dataUrl => {
             previewImgEl.src = dataUrl;
         });
     }
