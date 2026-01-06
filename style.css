@@ -262,7 +262,7 @@ h4 {
 
 .style-card img {
     width: 100%;
-    height: 100px;
+    aspect-ratio: 1 / 1;
     /* Efficient height */
     object-fit: cover;
     transition: all var(--transition-fast);
@@ -682,7 +682,7 @@ h4 {
 
     /* Smaller image preview */
     .quote-visual-ref {
-        height: 120px;
+        min-height: 120px;
         /* Much smaller */
     }
 
