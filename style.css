@@ -262,7 +262,7 @@ h4 {
 
 .style-card img {
     width: 100%;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 3;
     /* Efficient height */
     object-fit: cover;
     transition: all var(--transition-fast);
@@ -425,7 +425,8 @@ h4 {
 .preview-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: fill; /* Use fill because we manually crop the image in JS */
+    display: block;
     opacity: 0.95;
     mix-blend-mode: multiply;
     /* Better integration with paper */

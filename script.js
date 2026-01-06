@@ -326,32 +326,50 @@ function getImageAsDataURL(url) {
     });
 }
 
+
+
 function getImageCoverDataURL(url, targetW, targetH, scale = 1) {
     const key = `${url}|${targetW}|${targetH}|${scale}`;
     if (imageCache.has(key)) return Promise.resolve(imageCache.get(key));
     return new Promise((resolve) => {
         const img = new Image();
+        img.crossOrigin = "Anonymous"; // Try to enable CORS if possible
         img.onload = () => {
             const iw = img.width;
             const ih = img.height;
+            // Calculate scale to cover the target dimensions
             const rw = targetW / iw;
             const rh = targetH / ih;
-            const r = Math.max(rw, rh);
-            const sw = Math.min(iw, Math.round(targetW / r));
-            const sh = Math.min(ih, Math.round(targetH / r));
-            const sx = Math.max(0, Math.round((iw - sw) / 2));
-            const sy = Math.max(0, Math.round((ih - sh) / 2));
+            const r = Math.max(rw, rh); // Scale factor (how much to zoom in)
+            
+            // Calculate the dimensions of the crop area on the source image
+            // We want to map source pixels to target pixels.
+            // If we scale source by 'r', we get dimensions >= target.
+            // We want to find the source rectangle (sw, sh) that maps to (targetW, targetH)
+            // sw * r = targetW  => sw = targetW / r
+            const sw = Math.min(iw, targetW / r);
+            const sh = Math.min(ih, targetH / r);
+            
+            // Center the crop
+            const sx = Math.max(0, (iw - sw) / 2);
+            const sy = Math.max(0, (ih - sh) / 2);
+            
             const canvas = document.createElement('canvas');
+            // The canvas size should match the physical pixels we want to display
             canvas.width = Math.max(1, Math.round(targetW * scale));
             canvas.height = Math.max(1, Math.round(targetH * scale));
+            
             const ctx = canvas.getContext('2d');
+            // Draw the cropped source area (sx, sy, sw, sh) to the full canvas
             ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+            
             const dataURL = canvas.toDataURL('image/png');
             imageCache.set(key, dataURL);
             resolve(dataURL);
         };
         img.onerror = () => {
-            resolve(url);
+            console.warn('Failed to load image for cropping:', url);
+            resolve(url); // Fallback to original URL
         };
         img.src = url;
     });
@@ -410,10 +428,22 @@ function updatePreviewUI(finalPriceValue) {
 
     const previewImgEl = document.getElementById('preview-style-img');
     if (previewImgEl && pack.img) {
+        // Use the container's dimensions to determine the crop aspect ratio
+        // If container is not visible (e.g. loading), fallback to a standard 4:3 or similar logic if possible
+        // But here we just try to get offsetWidth.
         const container = document.querySelector('.quote-visual-ref');
-        const w = Math.max(1, Math.round(container ? container.offsetWidth : previewImgEl.offsetWidth));
-        const h = Math.max(1, Math.round(container ? container.offsetHeight : previewImgEl.offsetHeight));
-        getImageCoverDataURL(pack.img, w, h, CAPTURE_SCALE).then(dataUrl => {
+        // Ensure we have valid dimensions. Default to 4:3 ratio (e.g. 400x300) if zero.
+        let w = container ? container.offsetWidth : 0;
+        let h = container ? container.offsetHeight : 0;
+        
+        if (w === 0 || h === 0) {
+            // Fallback dimensions if element is hidden
+             w = 380; // approximate width of sidebar
+             h = 200; // height defined in CSS
+        }
+
+        // We use a scale of 2 for better quality on retina screens even in preview
+        getImageCoverDataURL(pack.img, w, h, 2).then(dataUrl => {
             previewImgEl.src = dataUrl;
         });
     }
