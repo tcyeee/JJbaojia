@@ -171,7 +171,7 @@ function calculate() {
     // Badges
     const badges = [];
     if (discountPerSqm > 0) {
-        badges.push(`<span class="badge discount">大面积优惠 -${discountPerSqm}/㎡</span>`);
+        badges.push(`<span class="badge discount">统一减免 -${discountPerSqm}/㎡</span>`);
     }
     if (materialDiscount > 0) {
         badges.push(`<span class="badge discount">材料减免 -¥${materialDiscount}</span>`);
@@ -407,7 +407,8 @@ function updatePreviewUI(finalPriceValue) {
     // Fees
     const discountPerSqm = getDiscountPerSqm();
     const materialDiscount = getMaterialDiscount();
-    const discountFee = discountPerSqm * area + materialDiscount;
+    const sceneCoeff = PRICES.scene[sceneValue] || 1.0;
+    const discountFee = discountPerSqm * area * sceneCoeff + materialDiscount;
 
     // Update Elements (Using shared IDs if present in both, or specific selectors)
     // For sidebar mode, we use the IDs in index.html directly
@@ -477,9 +478,13 @@ calculate();
 
 // Add global fade-in
 document.body.style.opacity = 0;
-window.onload = () => {
+const revealBody = () => {
     document.body.style.transition = 'opacity 0.6s ease';
     document.body.style.opacity = 1;
-    // Force initial preview update
     updatePreviewUI();
 };
+if (document.readyState === 'complete') {
+    revealBody();
+} else {
+    window.addEventListener('load', revealBody);
+}
