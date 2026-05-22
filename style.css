@@ -530,6 +530,13 @@ h4 {
     /* Editorial touch */
 }
 
+/* Dashed Section Divider */
+.divider-dashed {
+    border: none;
+    border-bottom: 1px dashed var(--color-border);
+    margin: 16px 0;
+}
+
 /* Fee Table - Precise Alignment */
 .fee-table {
     margin-top: 24px;
